@@ -1,0 +1,82 @@
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local tweenInfo = TweenInfo.new(
+	0.5,
+	Enum.EasingStyle.Quad,
+	Enum.EasingDirection.InOut
+)
+
+local ZERO_UDIM2 = UDim2.fromOffset(0, 0)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1
+		and input.UserInputType ~= Enum.UserInputType.Touch then
+		return
+	end
+
+	local mousePos = UserInputService:GetMouseLocation()
+	local x, y = mousePos.X, mousePos.Y
+
+	local frames = {}
+
+	for i = 1, math.random(3, 5) do
+		local frame = Instance.new("Frame")
+		frame.Size = UDim2.fromOffset(25, 25)
+		frame.Position = UDim2.fromOffset(x, y)
+		frame.AnchorPoint = Vector2.new(0.5, 0.5)
+		frame.ZIndex = 10
+		frame.BackgroundColor3 = Color3.new(1, 1, 1)
+		frame.BorderSizePixel = 0
+		frame.Visible = false
+		frame.Parent = ScreenGui
+
+		local stroke = Instance.new("UIStroke")
+		stroke.Thickness = 1.75
+		stroke.Color = Color3.new(0.2, 0.2, 0.2)
+		stroke.Parent = frame
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(1, 0)
+		corner.Parent = frame
+
+		local aspect = Instance.new("UIAspectRatioConstraint")
+		aspect.AspectRatio = 1
+		aspect.Parent = frame
+
+		table.insert(frames, frame)
+	end
+
+	for _, frame in ipairs(frames) do
+		frame.Visible = true
+
+		local distance = math.random(30, 50)
+		local angle = math.rad(math.random(0, 360))
+
+		local targetPos = UDim2.fromOffset(
+			x + math.cos(angle) * distance,
+			y + math.sin(angle) * distance
+		)
+
+		local tween = TweenService:Create(frame, tweenInfo, {
+			Position = targetPos,
+			Size = ZERO_UDIM2
+		})
+
+		tween.Completed:Once(function()
+			frame:Destroy()
+			tween:Destroy()
+		end)
+
+		tween:Play()
+		task.wait()
+	end
+end)
